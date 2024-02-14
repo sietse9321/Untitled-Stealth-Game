@@ -7,6 +7,7 @@ public class TracerBehavior : MonoBehaviour
 {
     private float speed = 100f;
     private Vector3 targetPosition;
+    public GameObject cube;
 
     public void SetTarget(Vector3 _target)
     {
@@ -21,6 +22,12 @@ public class TracerBehavior : MonoBehaviour
         if (Vector3.Dot(direction, targetPosition - transform.position) <= 0)
         {
             Destroy(gameObject);
+            Instantiate(cube, targetPosition, Quaternion.identity);
         }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        Destroy(gameObject);
+        Destroy(collision.gameObject);
     }
 }
