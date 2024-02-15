@@ -16,17 +16,14 @@ public class TracerBehavior : MonoBehaviour
 
     private void Update()
     {
-        Vector3 direction = targetPosition - transform.position;
-        transform.position += direction.normalized * speed * Time.deltaTime;
-
-        if (Vector3.Dot(direction, targetPosition - transform.position) <= 0)
-        {
-            Destroy(gameObject);
-            Instantiate(cube, targetPosition, Quaternion.identity);
-        }
+        //Vector3 direction = targetPosition - transform.position;
+        transform.position += transform.forward * speed * Time.deltaTime;
+        Destroy(gameObject, 1.5f);
     }
+
     private void OnCollisionEnter(Collision collision)
     {
+        print(collision);
         Destroy(gameObject);
         Destroy(collision.gameObject);
     }
