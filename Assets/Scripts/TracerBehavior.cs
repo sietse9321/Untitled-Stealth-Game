@@ -23,8 +23,11 @@ public class TracerBehavior : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        print(collision);
-        Destroy(gameObject);
-        Destroy(collision.gameObject);
+        if (collision.collider.tag != "Player")
+        {
+            print(collision);
+            Destroy(gameObject);
+            Destroy(collision.gameObject);
+        }
     }
 }

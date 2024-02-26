@@ -24,7 +24,6 @@ public class GunBehavior : MonoBehaviour
 
     private void Update()
     {
-        CameraMovement();
 
         if (Input.GetMouseButton(0) && canFire)
         {
@@ -62,16 +61,6 @@ public class GunBehavior : MonoBehaviour
             canFire = false;
         }
     }
-
-
-    private void CameraMovement()
-    {
-        float moveHorizontal = rotationSpeed * Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
-        float moveVertical = -rotationSpeed * Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
-        moveVertical = Mathf.Clamp(moveVertical, -90f, 90f);
-        transform.eulerAngles += new Vector3(moveVertical, moveHorizontal, 0f);
-    }
-
 
     private IEnumerator ROF(float time)
     {
