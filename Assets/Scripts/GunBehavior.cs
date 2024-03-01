@@ -1,16 +1,20 @@
 using System.Collections;
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/GunBehavior", order = 1)]
 public class GunBehavior : MonoBehaviour
 {
     [SerializeField] string gunName;
     bool canFire = true;
-    bool isAds = false;
+    [SerializeField] GunType[] gunType;
+    [SerializeField] GunType selectedGun;
     [SerializeField] Transform shootPos, adsPos, defaultPos;
     [SerializeField] Transform cam;
-    float reloadTime, ammo, sensitivity = 1f, rotationSpeed = 200f, moveHorizontal, moveVertical, maxDistance = 100f, rateOfFire = 1f;
+    float reloadTime, rateOfFire = 1f;
     [SerializeField] GameObject tracerPrefab;
     [SerializeField] bool aiming = false;
+
+
     [Header("UI")]
     [SerializeField] Camera mainCamera;
     [SerializeField] RectTransform dot;
@@ -48,6 +52,13 @@ public class GunBehavior : MonoBehaviour
     {
         WeaponSway();
         ShootDirToUI();
+    }
+    private void WeaponSwitch()
+    {
+        if(Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            
+        }
     }
 
     private void Shoot()
@@ -145,7 +156,12 @@ public class GunBehavior : MonoBehaviour
             dot.position = screenPoint;
         }
         Debug.DrawRay(ray.origin, ray.direction * maxRaycastDistance, Color.yellow);
-
+    }
+    private void SetBaseValues()
+    {
+        rateOfFire = selectedGun.rateOfFire;
+        defaultPos.transform.position = selectedGun.defaultPos;
+        adsPos.transform.position = selectedGun.adsPos;
     }
 
     private IEnumerator ROF(float time)
