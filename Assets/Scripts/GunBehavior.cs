@@ -1,24 +1,18 @@
 using System.Collections;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/GunBehavior", order = 1)]
 public class GunBehavior : MonoBehaviour
 {
     [SerializeField] string gunName;
-    bool canFire = true;
+
     [SerializeField] GunType[] gunType;
     [SerializeField] GunType selectedGun;
     [SerializeField] Transform shootPos, adsPos, defaultPos;
     [SerializeField] Transform cam;
-    float reloadTime, rateOfFire = 1f;
+    float reloadTime, rateOfFire = 0.06f; //? 0,12 for pistol
     [SerializeField] GameObject tracerPrefab;
-    [SerializeField] bool aiming = false;
+    bool aiming = false;
 
-
-    [Header("UI")]
-    [SerializeField] Camera mainCamera;
-    [SerializeField] RectTransform dot;
-    [SerializeField] float maxRaycastDistance = 100f;
 
     [Header("Sway/Bobbing Settings")]
     [SerializeField] float swayMulti;
@@ -26,6 +20,12 @@ public class GunBehavior : MonoBehaviour
     [SerializeField] float bobbingSpeed = 2f;
     [SerializeField] float bobbingAmount = 0.01f;
 
+    [Header("UI")]
+    [SerializeField] Camera mainCamera;
+    [SerializeField] RectTransform dot;
+    [SerializeField] float maxRaycastDistance = 100f;
+
+    bool canFire = true;
     float newY;
     float originalY;
 
@@ -162,6 +162,8 @@ public class GunBehavior : MonoBehaviour
         rateOfFire = selectedGun.rateOfFire;
         defaultPos.transform.position = selectedGun.defaultPos;
         adsPos.transform.position = selectedGun.adsPos;
+        reloadTime = selectedGun.reloadTime;
+
     }
 
     private IEnumerator ROF(float time)
