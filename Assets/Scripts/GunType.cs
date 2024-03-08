@@ -10,7 +10,7 @@ public class GunType : ScriptableObject
     public int magCap;
     public float rateOfFire;
     public float reloadTime;
-    public bool isSemiAuto;
+    public bool isAutomatic;
 
     [Header("Gun Positions:")]
     public Vector3 defaultPos;

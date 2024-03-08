@@ -1,4 +1,6 @@
+using Microsoft.Unity.VisualStudio.Editor;
 using System.Collections;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class GunBehavior : MonoBehaviour
@@ -6,13 +8,18 @@ public class GunBehavior : MonoBehaviour
     [SerializeField] string gunName;
 
     [SerializeField] GunType[] gunType;
+    [SerializeField] GameObject[] gunObjects;
     [SerializeField] GunType selectedGun;
     [SerializeField] Transform shootPos, adsPos, defaultPos;
     [SerializeField] Transform cam;
-    float reloadTime, rateOfFire = 0.06f; //? 0,12 for pistol
+    float reloadTime, rateOfFire = 0.2f; //? 0,20 for pistol
+    bool isAutomatic = false;
     [SerializeField] GameObject tracerPrefab;
     bool aiming = false;
+    bool isShooting;
+    float ammo;
 
+    [SerializeField] GameObject scope;
 
     [Header("Sway/Bobbing Settings")]
     [SerializeField] float swayMulti;
@@ -40,24 +47,60 @@ public class GunBehavior : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButton(0) && canFire)
+        if (Input.GetMouseButton(0) && isAutomatic && canFire)
         {
             Shoot();
             StartCoroutine(ROF(rateOfFire));
         }
+
+        if (Input.GetMouseButton(0) && isAutomatic == false && canFire && isShooting == false)
+        {
+            Shoot();
+            isShooting = true;
+            StartCoroutine(ROF(rateOfFire));
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            isShooting = false;
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            StartCoroutine(ROF(reloadTime));
+        }
         GunPos();
         WeaponBobbing();
+        WeaponSwitch();
     }
     private void FixedUpdate()
     {
         WeaponSway();
         ShootDirToUI();
     }
+    
     private void WeaponSwitch()
     {
-        if(Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            
+            foreach (GameObject gun in gunObjects)
+            {
+                gun.SetActive(false);
+            }
+            gunObjects[0].SetActive(true);
+            selectedGun = gunType[0];
+            SetBaseValues();
+            scope.SetActive(true);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            foreach (GameObject gun in gunObjects)
+            {
+                gun.SetActive(false);
+            }
+            gunObjects[1].SetActive(true);
+            selectedGun = gunType[1];
+            SetBaseValues();
+            scope.SetActive(true);
         }
     }
 
@@ -95,15 +138,17 @@ public class GunBehavior : MonoBehaviour
         //check if right mousebutten is pressed
         if (Input.GetMouseButton(1))
         {
-            shootPos.position = Vector3.Lerp(shootPos.position, adsPos.position, 5f * Time.deltaTime / Vector3.Distance(shootPos.position, adsPos.position));
+            shootPos.position = Vector3.Lerp(shootPos.position, adsPos.position, 4f * Time.deltaTime / Vector3.Distance(shootPos.position, adsPos.position));
             swayMulti = 2;
             aiming = true;
+            scope?.SetActive(true);
         }
         else
         {
-            shootPos.position = Vector3.Lerp(shootPos.position, defaultPos.position, 5f * Time.deltaTime / Vector3.Distance(shootPos.position, defaultPos.position));
+            shootPos.position = Vector3.Lerp(shootPos.position, defaultPos.position, 4f * Time.deltaTime / Vector3.Distance(shootPos.position, defaultPos.position));
             swayMulti = 8;
             aiming = false;
+            scope?.SetActive(false);
         }
     }
     private void WeaponSway()
@@ -128,7 +173,7 @@ public class GunBehavior : MonoBehaviour
             // Apply the bobbing motion to the weapon's local position
             shootPos.localPosition = new Vector3(shootPos.localPosition.x, newY, shootPos.localPosition.z);
         }
-        else if(newY != originalY)
+        else if (newY != originalY)
         {
             newY = originalY;
         }
@@ -144,32 +189,47 @@ public class GunBehavior : MonoBehaviour
         Ray ray = new Ray(shootPos.position, gunDirection);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, maxRaycastDistance))
+        if (Physics.Raycast(ray, out hit, 10f))
         {
             Vector2 screenPoint = mainCamera.WorldToScreenPoint(hit.point);
             dot.position = screenPoint;
         }
         else
         {
-            Vector3 rayEnd = shootPos.position + gunDirection * maxRaycastDistance;
+            Vector3 rayEnd = shootPos.position + gunDirection * 10f;
             Vector2 screenPoint = mainCamera.WorldToScreenPoint(rayEnd);
             dot.position = screenPoint;
         }
-        Debug.DrawRay(ray.origin, ray.direction * maxRaycastDistance, Color.yellow);
+        Debug.DrawRay(ray.origin, ray.direction * 10f, Color.yellow);
     }
     private void SetBaseValues()
     {
+        gunName = selectedGun.gunName;
         rateOfFire = selectedGun.rateOfFire;
-        defaultPos.transform.position = selectedGun.defaultPos;
-        adsPos.transform.position = selectedGun.adsPos;
+        defaultPos.localPosition = selectedGun.defaultPos;
+        adsPos.localPosition = selectedGun.adsPos;
         reloadTime = selectedGun.reloadTime;
-
+        isAutomatic = selectedGun.isAutomatic;
+        //wait(6)
+        //bool = true
     }
 
-    private IEnumerator ROF(float time)
+    private IEnumerator Reload(float _time)
     {
-        yield return new WaitForSeconds(time);
+        yield return new WaitForSeconds(_time);
+        if(ammo > 1)
+        {
+            ammo = selectedGun.magCap + 1;
+        }
+        else
+        {
+            ammo = selectedGun.magCap;
+        }
         canFire = true;
     }
-
+    private IEnumerator ROF(float _time)
+    {
+        yield return new WaitForSeconds(_time);
+        canFire = true;
+    }
 }

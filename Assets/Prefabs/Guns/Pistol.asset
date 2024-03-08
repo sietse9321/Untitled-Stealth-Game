@@ -15,6 +15,7 @@ MonoBehaviour:
   gunName: Pistol
   magCap: 9
   rateOfFire: 0.2
-  reloadTime: 2
+  reloadTime: 1.5
+  isAutomatic: 0
   defaultPos: {x: 0.441, y: -0.188, z: 0.725}
   adsPos: {x: 0, y: -0.07, z: 0.77}

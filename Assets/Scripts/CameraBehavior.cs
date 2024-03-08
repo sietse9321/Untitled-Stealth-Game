@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class CameraBehavior : MonoBehaviour
 {
-    float sensX = 10f;
-    float sensY = 10f;
-    float speed = 100f;
+    public float sensX = 10f;
+    public float sensY = 10f;
+    public float speed = 100f;
     [SerializeField] Transform parentTransform;
 
     // Start is called before the first frame update
