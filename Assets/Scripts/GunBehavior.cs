@@ -1,10 +1,13 @@
-using Microsoft.Unity.VisualStudio.Editor;
+using System;
 using System.Collections;
-using UnityEditor.Experimental.GraphView;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Pool;
+using UnityEngine.UI;
 
 public class GunBehavior : MonoBehaviour
 {
+    public bool isUnarmed;
     [SerializeField] string gunName;
 
     [SerializeField] GunType[] gunType;
@@ -17,7 +20,7 @@ public class GunBehavior : MonoBehaviour
     [SerializeField] GameObject tracerPrefab;
     bool aiming = false;
     bool isShooting;
-    float ammo;
+    int ammo;
 
     [SerializeField] GameObject scope;
 
@@ -28,10 +31,14 @@ public class GunBehavior : MonoBehaviour
     [SerializeField] float bobbingAmount = 0.01f;
 
     [Header("UI")]
+    [SerializeField] TextMeshProUGUI ammoText;
     [SerializeField] Camera mainCamera;
     [SerializeField] RectTransform dot;
-    [SerializeField] float maxRaycastDistance = 100f;
+    [SerializeField] Image img;
 
+    ObjectPool<TracerBehavior> tracerPool;
+
+    //int pistolAmmo = 111, rifleAmmo = 230;
     bool canFire = true;
     float newY;
     float originalY;
@@ -41,19 +48,21 @@ public class GunBehavior : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
+        isUnarmed = true;
         Cursor.lockState = CursorLockMode.Locked;
         originalY = shootPos.localPosition.y;
+        img.enabled = false;
     }
 
     private void Update()
     {
-        if (Input.GetMouseButton(0) && isAutomatic && canFire)
+        if (Input.GetMouseButton(0) && isAutomatic && canFire && ammo > 0)
         {
             Shoot();
             StartCoroutine(ROF(rateOfFire));
         }
 
-        if (Input.GetMouseButton(0) && isAutomatic == false && canFire && isShooting == false)
+        if (Input.GetMouseButton(0) && isAutomatic == false && canFire && isShooting == false && ammo > 0)
         {
             Shoot();
             isShooting = true;
@@ -66,7 +75,7 @@ public class GunBehavior : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            StartCoroutine(ROF(reloadTime));
+            StartCoroutine(Reload(reloadTime));
         }
         GunPos();
         WeaponBobbing();
@@ -76,33 +85,71 @@ public class GunBehavior : MonoBehaviour
     {
         WeaponSway();
         ShootDirToUI();
+        CanvasUpdate();
     }
-    
+    private void CanvasUpdate()
+    {
+        if (!isUnarmed)
+        {
+            ammoText.text = ammo + "/" + selectedGun.magCap;
+        }
+        else
+        {
+            ammoText.text = "Unarmed";
+        }
+    }
+
+    #region Switching gun
     private void WeaponSwitch()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            foreach (GameObject gun in gunObjects)
-            {
-                gun.SetActive(false);
-            }
-            gunObjects[0].SetActive(true);
-            selectedGun = gunType[0];
-            SetBaseValues();
-            scope.SetActive(true);
+            SwitchToUnarmed();
+            StopAllCoroutines();
+            return;
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+
+        for (int i = 0; i < gunObjects.Length; i++)
         {
-            foreach (GameObject gun in gunObjects)
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
             {
-                gun.SetActive(false);
+                SwitchToGun(i);
+                StopAllCoroutines();
+                break;
             }
-            gunObjects[1].SetActive(true);
-            selectedGun = gunType[1];
-            SetBaseValues();
-            scope.SetActive(true);
         }
     }
+    private void SwitchToGun(int index)
+    {
+        if (index < 0 || index >= gunObjects.Length)
+            return;
+
+        foreach (GameObject gun in gunObjects)
+        {
+            gun.SetActive(false);
+        }
+        gunObjects[index].SetActive(true);
+        selectedGun = gunType[index];
+        SetBaseValues();
+        scope.SetActive(true);
+        isUnarmed = false;
+        canFire = true;
+        img.enabled = true;
+    }
+    private void SwitchToUnarmed()
+    {
+        foreach (GameObject gun in gunObjects)
+        {
+            gun.SetActive(false);
+        }
+        img.enabled = false;
+        isUnarmed = true;
+        selectedGun = null;
+        scope.SetActive(false);
+        canFire = false;
+    }
+    #endregion
 
     private void Shoot()
     {
@@ -135,20 +182,23 @@ public class GunBehavior : MonoBehaviour
     }
     private void GunPos()
     {
+        if (isUnarmed) { return; }
         //check if right mousebutten is pressed
         if (Input.GetMouseButton(1))
         {
             shootPos.position = Vector3.Lerp(shootPos.position, adsPos.position, 4f * Time.deltaTime / Vector3.Distance(shootPos.position, adsPos.position));
-            swayMulti = 2;
+            swayMulti = 0.5f;
             aiming = true;
             scope?.SetActive(true);
+            img.enabled = false;
         }
         else
         {
             shootPos.position = Vector3.Lerp(shootPos.position, defaultPos.position, 4f * Time.deltaTime / Vector3.Distance(shootPos.position, defaultPos.position));
-            swayMulti = 8;
+            swayMulti = 8f;
             aiming = false;
             scope?.SetActive(false);
+            img.enabled = true;
         }
     }
     private void WeaponSway()
@@ -189,18 +239,18 @@ public class GunBehavior : MonoBehaviour
         Ray ray = new Ray(shootPos.position, gunDirection);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, 10f))
+        if (Physics.Raycast(ray, out hit, 50f))
         {
             Vector2 screenPoint = mainCamera.WorldToScreenPoint(hit.point);
             dot.position = screenPoint;
         }
         else
         {
-            Vector3 rayEnd = shootPos.position + gunDirection * 10f;
+            Vector3 rayEnd = shootPos.position + gunDirection * 50f;
             Vector2 screenPoint = mainCamera.WorldToScreenPoint(rayEnd);
             dot.position = screenPoint;
         }
-        Debug.DrawRay(ray.origin, ray.direction * 10f, Color.yellow);
+        Debug.DrawRay(ray.origin, ray.direction * 50f, Color.yellow);
     }
     private void SetBaseValues()
     {
@@ -210,26 +260,29 @@ public class GunBehavior : MonoBehaviour
         adsPos.localPosition = selectedGun.adsPos;
         reloadTime = selectedGun.reloadTime;
         isAutomatic = selectedGun.isAutomatic;
-        //wait(6)
-        //bool = true
+        ammo = selectedGun.currentAmmo;
     }
 
     private IEnumerator Reload(float _time)
     {
         yield return new WaitForSeconds(_time);
-        if(ammo > 1)
-        {
-            ammo = selectedGun.magCap + 1;
-        }
-        else
+        if (ammo >= 1)
         {
             ammo = selectedGun.magCap;
         }
+        else
+        {
+            ammo = selectedGun.magCap - 1;
+        }
         canFire = true;
+        selectedGun.currentAmmo = ammo;
     }
     private IEnumerator ROF(float _time)
     {
         yield return new WaitForSeconds(_time);
+        print("Shooting!");
+        ammo--;
+        selectedGun.currentAmmo--;
         canFire = true;
     }
 }

@@ -8,6 +8,7 @@ public class GunType : ScriptableObject
 
     [Header("Gun Propertys:")]
     public int magCap;
+    public int currentAmmo;
     public float rateOfFire;
     public float reloadTime;
     public bool isAutomatic;

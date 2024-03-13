@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gunName: HK416
   magCap: 31
+  currentAmmo: 30
   rateOfFire: 0.0666
   reloadTime: 3
   isAutomatic: 1
-  defaultPos: {x: 0.312, y: -0.18, z: 0.508}
-  adsPos: {x: 0, y: -0.057, z: 0.3035}
+  defaultPos: {x: 0.312, y: -2.14, z: 0.3}
+  adsPos: {x: 0, y: -0.057, z: 0.07}

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class TracerBehavior : MonoBehaviour
 {
-    private float speed = 100f;
+    private float speed = 125f;
     private Vector3 targetPosition;
     public GameObject cube;
 
