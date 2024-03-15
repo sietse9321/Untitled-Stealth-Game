@@ -20,6 +20,7 @@ public class GunBehavior : MonoBehaviour
     [SerializeField] GameObject tracerPrefab;
     bool aiming = false;
     bool isShooting;
+    bool isReloading;
     int ammo;
 
     [SerializeField] GameObject scope;
@@ -56,25 +57,30 @@ public class GunBehavior : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButton(0) && isAutomatic && canFire && ammo > 0)
+        if (!isReloading)
         {
-            Shoot();
-            StartCoroutine(ROF(rateOfFire));
-        }
+            if (Input.GetMouseButton(0) && isAutomatic && canFire && ammo > 0)
+            {
+                Shoot();
+                StartCoroutine(ROF(rateOfFire));
+            }
 
-        if (Input.GetMouseButton(0) && isAutomatic == false && canFire && isShooting == false && ammo > 0)
-        {
-            Shoot();
-            isShooting = true;
-            StartCoroutine(ROF(rateOfFire));
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            isShooting = false;
+            if (Input.GetMouseButton(0) && isAutomatic == false && canFire && isShooting == false && ammo > 0)
+            {
+                Shoot();
+                isShooting = true;
+                StartCoroutine(ROF(rateOfFire));
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                isShooting = false;
+            }
+
         }
 
         if (Input.GetKeyDown(KeyCode.R))
         {
+            isReloading = true;
             StartCoroutine(Reload(reloadTime));
         }
         GunPos();
@@ -102,7 +108,6 @@ public class GunBehavior : MonoBehaviour
     #region Switching gun
     private void WeaponSwitch()
     {
-
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             SwitchToUnarmed();
@@ -136,6 +141,7 @@ public class GunBehavior : MonoBehaviour
         isUnarmed = false;
         canFire = true;
         img.enabled = true;
+        isReloading = false;
     }
     private void SwitchToUnarmed()
     {
@@ -275,6 +281,7 @@ public class GunBehavior : MonoBehaviour
             ammo = selectedGun.magCap - 1;
         }
         canFire = true;
+        isReloading = false;
         selectedGun.currentAmmo = ammo;
     }
     private IEnumerator ROF(float _time)

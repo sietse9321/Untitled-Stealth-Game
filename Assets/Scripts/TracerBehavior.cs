@@ -24,7 +24,7 @@ public class TracerBehavior : MonoBehaviour
         {
             print(collision);
             Destroy(gameObject);
-            Destroy(collision.gameObject);
+            //Destroy(collision.gameObject);
         }
     }
 }
