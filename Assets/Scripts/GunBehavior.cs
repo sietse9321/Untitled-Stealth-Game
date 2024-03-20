@@ -170,7 +170,7 @@ public class GunBehavior : MonoBehaviour
         {
             Debug.DrawRay(shootPos.position, shootPos.forward * 100f, Color.green, 1f);
 
-            print("Hit something: " + hit.point);
+            //print("Hit something: " + hit.point);
             GameObject tracer = Instantiate(tracerPrefab, shootPos.position, shootPos.rotation);
             tracer.GetComponent<TracerBehavior>().SetTarget(hit.point);
             canFire = false;
