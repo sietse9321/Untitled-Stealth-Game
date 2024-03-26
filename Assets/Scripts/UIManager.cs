@@ -9,6 +9,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] Material screenMaterial;
     [SerializeField] Camera screenCam;
     [SerializeField] Canvas screenCanvas;
+    [SerializeField] Animator canvasAnimator;
     string mission;
     //private void Update()
     //{
@@ -58,6 +59,7 @@ public class UIManager : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        canvasAnimator.SetTrigger("Glitch"); 
         if (collision.collider.tag == "Player") return;
         Collider collider = collision.GetContact(0).thisCollider;
 
@@ -116,7 +118,7 @@ public class UIManager : MonoBehaviour
             case 4:
                 print("AcceptMission");
                 //load scene by name using string of mission
-                SceneManager.LoadScene(mission);
+                //SceneManager.LoadScene(mission);
                 SceneManager.LoadScene("GunTest");
                 break;
             case 5:
