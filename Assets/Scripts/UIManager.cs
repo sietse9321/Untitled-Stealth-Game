@@ -11,6 +11,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] Canvas screenCanvas;
     [SerializeField] Animator canvasAnimator;
     string mission;
+    bool loggedIn = false;
     //private void Update()
     //{
     //    if (Input.GetKeyUp(KeyCode.R))
@@ -41,9 +42,12 @@ public class UIManager : MonoBehaviour
     }
     void ActivateCanvas()
     {
-        screenCanvas.enabled = true;
-        buttons[0].SetActive(true);
-        images[0].SetActive(true);
+        if (loggedIn == false)
+        {
+            screenCanvas.enabled = true;
+            buttons[0].SetActive(true);
+            images[0].SetActive(true);
+        }
     }
     void DeactivateItems()
     {
@@ -59,7 +63,7 @@ public class UIManager : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        canvasAnimator.SetTrigger("Glitch"); 
+        canvasAnimator.SetTrigger("Glitch");
         if (collision.collider.tag == "Player") return;
         Collider collider = collision.GetContact(0).thisCollider;
 
@@ -79,6 +83,7 @@ public class UIManager : MonoBehaviour
         {
             case 0:
                 print("Logged in");
+                loggedIn = true;
                 buttons[0].SetActive(false);
                 images[0].SetActive(false);
                 buttons[1].SetActive(true);
